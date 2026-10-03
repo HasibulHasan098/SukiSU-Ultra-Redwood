@@ -85,6 +85,10 @@ until v4.2.0.
 
 Revert: `fastboot flash boot <stock Lineage boot.img>`.
 
+Prebuilt flashable files for this exact build are attached to
+[release v3.2.0-redwood-1](https://github.com/HasibulHasan098/SukiSU-Ultra-Redwood/releases/tag/v3.2.0-redwood-1)
+(`boot_sukisu.img`, `SukiSU_v3.2.0_Scarlet_redwood_AK3.zip`).
+
 ## Verified on device
 
 - Manager home: `Working` + `Built-in`, version `v3.2.0-0af1ab28@HEAD`, hook type `Kprobes`,
@@ -113,12 +117,18 @@ Revert: `fastboot flash boot <stock Lineage boot.img>`.
 ## Layout
 
 ```
+README.md
 patches/   0001-sukisu-v3.2.0-legacy-5.4-selinux-port.patch
 config/    redwood_sukisu.fragment          KSU/KPM/kprobes switches
            redwood_sukisu_defconfig         savedefconfig of the working build
            redwood_sukisu_defconfig.full    full .config of the working build
 scripts/   setup.sh build.sh pack.sh make-shim.sh
+docs/      PORTING.md
 ```
+
+[docs/PORTING.md](docs/PORTING.md) has the details: why the current fork line does not build on
+5.4, the exact API cliffs, kbuild gotchas in this tree, config archaeology, and how the KPM stub
+was traced.
 
 Upstream: [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra) (tag `v3.2.0`),
 Scarlet kernel by Tashar @ Atom-X-Devs, AnyKernel3 by osm0sis. Kernel sources GPL-2.0.
