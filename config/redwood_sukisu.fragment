@@ -1,0 +1,9 @@
+# SukiSU-Ultra on the redwood 5.4 QGKI tree.
+# The bundled fork leaves CONFIG_KSU off, so it has to be turned on explicitly.
+CONFIG_MODULES=y
+CONFIG_KPROBES=y
+CONFIG_KRETPROBES=y
+CONFIG_OVERLAY_FS=y
+CONFIG_KSU=y
+CONFIG_KPM=y
+CONFIG_KSU_KPROBES_HOOK=y

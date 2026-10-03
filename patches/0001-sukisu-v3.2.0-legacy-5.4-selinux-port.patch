@@ -1,0 +1,89 @@
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 0c2ba390..86e0e49e 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -127,4 +127,9 @@ endif
+ ccflags-y += -Wno-implicit-function-declaration -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat
+ ccflags-y += -Wno-declaration-after-statement -Wno-unused-function
+ 
++# some pre-5.10 vendor trees already backport current_sid() into selinux/include/objsec.h
++ifeq ($(shell grep -q " current_sid(void)" $(srctree)/security/selinux/include/objsec.h 2>/dev/null; echo $$?),0)
++ccflags-y += -DKSU_COMPAT_HAS_CURRENT_SID
++endif
++
+ # Keep a new line here!! Because someone may append config
+diff --git a/kernel/selinux/rules.c b/kernel/selinux/rules.c
+index c60159c0..0d6ed7f4 100644
+--- a/kernel/selinux/rules.c
++++ b/kernel/selinux/rules.c
+@@ -9,7 +9,9 @@
+ #include "linux/lsm_audit.h"
+ #include "xfrm.h"
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+ #define SELINUX_POLICY_INSTEAD_SELINUX_SS
++#endif
+ 
+ #define KERNEL_SU_DOMAIN "su"
+ #define KERNEL_SU_FILE "ksu_file"
+@@ -19,8 +21,12 @@
+ static struct policydb *get_policydb(void)
+ {
+ 	struct policydb *db;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+ 	struct selinux_policy *policy = selinux_state.policy;
+ 	db = &policy->policydb;
++#else
++	db = &selinux_state.ss->policydb;
++#endif
+ 	return db;
+ }
+ 
+diff --git a/kernel/selinux/sepolicy.c b/kernel/selinux/sepolicy.c
+index 7759602c..63631912 100644
+--- a/kernel/selinux/sepolicy.c
++++ b/kernel/selinux/sepolicy.c
+@@ -524,6 +524,7 @@ static bool add_filename_trans(struct policydb *db, const char *s,
+ 		return false;
+ 	}
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
+ 	struct filename_trans_key key;
+ 	key.ttype = tgt->value;
+ 	key.tclass = cls->value;
+@@ -561,6 +562,35 @@ static bool add_filename_trans(struct policydb *db, const char *s,
+ 
+ 	db->compat_filename_trans_count++;
+ 	return ebitmap_set_bit(&trans->stypes, src->value - 1, 1) == 0;
++#else // < 5.7: struct filename_trans is the key, one otype per key
++	struct filename_trans key;
++	key.ttype = tgt->value;
++	key.tclass = cls->value;
++	key.name = (char *)o;
++
++	struct filename_trans_datum *trans =
++		hashtab_search(db->filename_trans, &key);
++
++	if (trans == NULL) {
++		trans = (struct filename_trans_datum *)kcalloc(1, sizeof(*trans), GFP_KERNEL);
++		if (!trans) {
++			pr_err("add_filename_trans: Failed to alloc datum\n");
++			return false;
++		}
++		struct filename_trans *new_key =
++			(struct filename_trans *)kmalloc(sizeof(*new_key), GFP_KERNEL);
++		if (!new_key) {
++			pr_err("add_filename_trans: Failed to alloc new_key\n");
++			return false;
++		}
++		*new_key = key;
++		new_key->name = kstrdup(key.name, GFP_KERNEL);
++		trans->otype = def->value;
++		hashtab_insert(db->filename_trans, new_key, trans);
++	}
++
++	return ebitmap_set_bit(&db->filename_trans_ttypes, src->value - 1, 1) == 0;
++#endif
+ }
+ 
+ static bool add_genfscon(struct policydb *db, const char *fs_name,
