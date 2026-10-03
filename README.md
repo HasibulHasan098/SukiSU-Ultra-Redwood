@@ -87,7 +87,8 @@ Revert: `fastboot flash boot <stock Lineage boot.img>`.
 
 Prebuilt flashable files for this exact build are attached to
 [release v3.2.0-redwood-1](https://github.com/HasibulHasan098/SukiSU-Ultra-Redwood/releases/tag/v3.2.0-redwood-1)
-(`boot_sukisu.img`, `SukiSU_v3.2.0_Scarlet_redwood_AK3.zip`).
+(`boot_sukisu.img`, `SukiSU_v3.2.0_Scarlet_redwood_AK3.zip`, and a mirror of the matching
+`SukiSU_v3.2.0_13375-release.apk` manager).
 
 ## Verified on device
 
