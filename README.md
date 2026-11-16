@@ -1,7 +1,7 @@
 # SukiSU-Ultra on Scarlet redwood (5.4.302)
 
 SukiSU-Ultra **v3.2.0** built **BUILTIN** (not a `.ko`) into the Scarlet / CAF
-Qualcomm **5.4.302** kernel for **Xiaomi redwood**, packaged as a flashable `boot.img`.
+Qualcomm **5.4.302** kernel for **Xiaomi redwood**, packaged as a flashable `boot.img`
 
 ## Tested on
 
